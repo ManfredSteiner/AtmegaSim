@@ -1,0 +1,9 @@
+# Netbeans
+**/build
+**/dist
+**/nbproject/private
+**/.dep.inc
+
+# Codeblocks
+**/bin
+**/obj
