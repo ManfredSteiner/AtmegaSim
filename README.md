@@ -1,11 +1,11 @@
 # AtmegaSim
 
-The goal of this project is to join a Java program with a Atmega microcontroller C program, in order
-to improve debugging capabilities, for example if you have to implement a communicaton protocol stack 
+The goal of this project is to join a Java program with an Atmega microcontroller C program, in order
+to improve debugging capabilities. For example if you have to implement a communicaton protocol stack 
 between a Java program on the one side and a microcontroller on the other side.
 
 This project is created and tested with Netbeans 8.2 under Linux. The usage of other 
-IDEs, versions or operating systems may cause problems which were not checked up to now.
+IDEs, versions or operating systems may cause problems which have not been checked up to now.
 
 ## Build and run
 
@@ -30,9 +30,10 @@ Follow the following procedure to build and run this project...
 See subproject [AtmegaSimJava](AtmegaSimJava)
 
 The Java Native Interface (JNI) is used to bind the native shared library 
-[libAtmegaSimSharedLib.so](/libAtmegaSimSharedLib) with the Java VM. 
+[libAtmegaSimSharedLib.so](AtmegaSimJava/libAtmegaSimSharedLib.so) with the Java VM. 
 The library file itself is build in the subproject **AtmegaSimSharedLib** and 
 only a symbolic link is used to make the library available for Javas *System.load(..)*.
+An alternative systemwide location is [/usr/java/packages/lib/amd64/](file:///usr/java/packages/lib/amd64/).
 
 So you need to build AtmegaSimSharedLib first, before you can start the Java application.
 
@@ -40,19 +41,22 @@ So you need to build AtmegaSimSharedLib first, before you can start the Java app
 
 See subproject [AtmegaSimSharedLib](AtmegaSimSharedLib).
 
-In the directory [src](AtmegaSimSharedLib/src) are the the sources for the shared library. 
+In the directory [src](AtmegaSimSharedLib/src) are the the source files for building the native shared library. 
 The files [global.h](ArduinoNano/src/global.h), [app.h](ArduinoNano/src/app.h) and [app.c](ArduinoNano/src/app.c) 
-are only sy,bolic links to the original microcontroller project [ArduinoNano](ArduinoNano).
+are only symbolic links to the original microcontroller project [ArduinoNano](ArduinoNano).
 
-The project is compiled and linked with the GNU **-g** option, the support debugging information inside the 
+The project is compiled and linked with the GNU **-g** option, to support debugging information inside the 
 shared library.
 
-In Netbeans project properties (category Build/C++ Compile) the include directories are set to
-[/usr/lib/jvm/java-8-oracle/include/linux](file:///usr/lib/jvm/java-8-oracle/include/linux) and
-[/usr/lib/jvm/java-8-oracle/include](file:///usr/lib/jvm/java-8-oracle/include).
-This is needed because the file [AtmegaSimSharedLib/src/jni_App.c](AtmegaSimSharedLib/src/jni_App.c) includes
-the file [jni.h](file:///usr/lib/jvm/java-8-oracle/include/jni.h), which is located in the installation directory of your java development kit.
-Maybe you have to adjust these values to your system.
+Please check the correct location of:  
+
+* [/usr/lib/jvm/java-8-oracle/include/linux](file:///usr/lib/jvm/java-8-oracle/include/linux)  
+* [/usr/lib/jvm/java-8-oracle/include/jni.h](file:///usr/lib/jvm/java-8-oracle/include/jni.h)
+
+If you cannot find these two header files there, you have to set the proper directory. Open Netbeans project properties,  category Build/C++ Compile and set include directories to the location of your Java Development Kit. You will
+also find these settings in [configurations.xml](AtmegaSimSharedLib/nbproject/configurations.xml).
+
+The header files are needed by [jni_App.c](AtmegaSimSharedLib/src/jni_App.c).
 
 --------------------------------------------------------
 
@@ -64,7 +68,7 @@ At first start the Java GUI application and the afterward the GNU-Debugger **gdb
 2. `java -Djava.library.path=<project-dir>/AtmegaSimJava -jar dist/AtmegaSimJava.jar &`
 3. `sudo -i`
 4. `gdb`
-```
+
 
 Now you have to attach the GNU-Debugger to the running Java program.
 For the attach command you need the process ID (PID visible in title bar).
