@@ -15,7 +15,7 @@ Follow the following procedure to build and run this project...
 2. `cd <repository>/AtmegaSimJava`
 3. `ant jar`  
      Now the Java project is build and the tool *javah* creates the file 
-     **AtmegaSimSharedLib/src/jni_App.h** which is needed by the shared library project.  
+     **AtmegaSimSharedLib/src/jni_App.h** which is needed by the shared library project.
      You can also use Netbeans, open the project and build the project.
 4. `cd ../AtmegaSimSharedLib`
 5. `make`  
@@ -24,10 +24,11 @@ Follow the following procedure to build and run this project...
 6.  `cd ..`
 7.  Start the application with...  
     `java -Djava.library.path=$(pwd)/AtmegaSimJava -jar AtmegaSimJava/dist/AtmegaSimJava.jar`
-    
-$(pwd)` is used and will be replaced by the current directory path. The Define *java.library.path*
+
+The shell will replace `$(pwd)` (print working directory) by the current directory path. The Define *java.library.path*
 must be set, otherwise the shared library will not be found by the Java VM. An alternative is 
 to locate the library file (or a symbolic link) in the directory `/usr/java/packages/lib/amd64/`
+
 ## Java Project
 
 See subproject [AtmegaSimJava](AtmegaSimJava)
@@ -65,10 +66,15 @@ The header files are needed by [jni_App.c](AtmegaSimSharedLib/src/jni_App.c).
 
 ## Debugging with gdb
 
-At first start the Java GUI application and the afterward the GNU-Debugger **gdb**
+See also:
+* [https://www.gnu.org/software/gdb/gdb.html](https://www.gnu.org/software/gdb/gdb.html)
+* [https://www.cs.cmu.edu/~gilpin/tutorial/](https://www.cs.cmu.edu/~gilpin/tutorial/)
+* [http://www.dirac.org/linux/gdb/](http://www.dirac.org/linux/gdb/)
+
+At first start the Java GUI application and the afterwards the GNU-Debugger **gdb**
 
 1. `cd <project-dir>/AtmegaSimJava`
-2. `java -Djava.library.path=<project-dir>/AtmegaSimJava -jar dist/AtmegaSimJava.jar &`
+2. `java -Djava.library.path=$(pwd) -jar dist/AtmegaSimJava.jar &`
 3. `sudo -i`
 4. `gdb`
 
@@ -97,4 +103,25 @@ next
 info args
 info locals
 info
+```
+With `break` you can set breakpoints.
+With `next` you step over the call of functions. With `step` you 
+can step into functions. With `continue` you can continue the program 
+up to next breakpoint. You can also use abbreviations (b, n, s, c).
+
+For example:
+
+```
+attach 7123
+list Java_jni_App_main
+break 126
+c
+
+list
+n
+n
+s
+n
+
+detach
 ```
