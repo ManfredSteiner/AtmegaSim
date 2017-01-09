@@ -19,7 +19,7 @@ Follow the following procedure to build and run this project...
      You can also use Netbeans, open the project and build the project.
 4. `cd ../AtmegaSimSharedLib`
 5. `make`  
-     Now the native shared library is build and saved in 
+     Now the native shared library is build and saved in...  
      **AtmegaSimSharedLib/dist/Debug_linux_Gnu-Linux/libAtmegaSimSharedLib.so**
 6.  `cd ..`
 7.  Start the application with...  
@@ -71,19 +71,26 @@ See also:
 * [https://www.cs.cmu.edu/~gilpin/tutorial/](https://www.cs.cmu.edu/~gilpin/tutorial/)
 * [http://www.dirac.org/linux/gdb/](http://www.dirac.org/linux/gdb/)
 
-At first start the Java GUI application and the afterwards the GNU-Debugger **gdb**
+At first start the Java GUI application and afterwards the GNU-Debugger **gdb**.
+Using two different shells would make sense.
+
+Start in a first shell (or use Netbeans IDE to start the Java application):
 
 1. `cd <project-dir>/AtmegaSimJava`
 2. `java -Djava.library.path=$(pwd) -jar dist/AtmegaSimJava.jar &`
-3. `sudo -i`
-4. `gdb`
+
+... and in a second shell:
+
+1. `sudo -i`
+2. `gdb`
 
 
 Now you have to attach the GNU-Debugger to the running Java program.
-For the attach command you need the process ID (PID visible in title bar).
+For the command `attach` you need the process identifier (the PID) of the running Java application.
+This PID is shown in the title bar of the Java GUI application.
 
 After attachment you can pause the program with pressing CTRL+C. 
-Now you can use the following commands to debug your simulated microcontroller program.
+Now you can use the following commands to debug your 'simulated' microcontroller program.
 
 ```
 attach <pid>
