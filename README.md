@@ -13,18 +13,21 @@ Follow the following procedure to build and run this project...
 
 1. `git clone <repository>`
 2. `cd <repository>/AtmegaSimJava`
-3. `make`  
+3. `ant jar`  
      Now the Java project is build and the tool *javah* creates the file 
-     **AtmegaSimSharedLib/src/jni_App.h** which is needed by the shared library project.
+     **AtmegaSimSharedLib/src/jni_App.h** which is needed by the shared library project.  
+     You can also use Netbeans, open the project and build the project.
 4. `cd ../AtmegaSimSharedLib`
 5. `make`  
      Now the native shared library is build and saved in 
      **AtmegaSimSharedLib/dist/Debug_linux_Gnu-Linux/libAtmegaSimSharedLib.so**
 6.  `cd ..`
-7.  Start the application with... 
-    `java -jar dist/AtmegaSimJava`
-
-
+7.  Start the application with...  
+    `java -Djava.library.path=$(pwd)/AtmegaSimJava -jar AtmegaSimJava/dist/AtmegaSimJava.jar`
+    
+$(pwd)` is used and will be replaced by the current directory path. The Define *java.library.path*
+must be set, otherwise the shared library will not be found by the Java VM. An alternative is 
+to locate the library file (or a symbolic link) in the directory `/usr/java/packages/lib/amd64/`
 ## Java Project
 
 See subproject [AtmegaSimJava](AtmegaSimJava)
