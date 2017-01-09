@@ -131,4 +131,5 @@ s
 n
 
 detach
+quit
 ```
