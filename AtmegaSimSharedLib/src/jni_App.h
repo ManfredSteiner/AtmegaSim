@@ -127,6 +127,14 @@ JNIEXPORT void JNICALL Java_jni_App_timer2_1ovf
 JNIEXPORT void JNICALL Java_jni_App_uart_1isr
   (JNIEnv *, jobject, jbyte);
 
+/*
+ * Class:     jni_App
+ * Method:    sys_500us_isr
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_jni_App_sys_1500us_1isr
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

@@ -154,15 +154,15 @@ void sys_main (void)
 
 //----------------------------------------------------------------------------
 
-uint8_t sys_inc8BitCnt (uint8_t count)
+void sys_inc8BitCnt (volatile uint8_t *count)
 {
-  return count<0xff ? count+1 : count;
+  *count = *count<0xff ? *count + 1 : *count;
 }
 
 
-uint16_t sys_inc16BitCnt (uint16_t count)
+void sys_inc16BitCnt (volatile uint16_t *count)
 {
-  return count<0xffff ? count+1 : count;
+  *count =  *count<0xffff ? *count + 1 : *count;
 }
 
 
@@ -699,7 +699,7 @@ ISR (SYS_TIMER0_VECTOR)
     cnt100us = 0;
     cnt500us++;
     if (busy)
-      sys.taskErr_u8 = sys_inc8BitCnt(sys.taskErr_u8);
+      sys_inc8BitCnt(&sys.taskErr_u8);
     else
     {
       busy = 1;

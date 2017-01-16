@@ -43,7 +43,9 @@ void app_main (void)
 
 void app_task_1ms (void)
 {
-  sys_log(__FILE__, __LINE__, sys_pid(), "task_1ms()");
+  static uint8_t i = 0;
+  i++;
+  sys_log(__FILE__, __LINE__, sys_pid(), "task_1ms(), i=%d", i);
 }
 
 void app_task_2ms (void)

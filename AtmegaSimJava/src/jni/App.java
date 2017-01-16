@@ -1,22 +1,34 @@
 package jni;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import logging.Logger;
 
 
 /**
  *
- * @author Manfred Steiner<sx@htl-kaindorf.at>
+ * @author sx@htl-kaindorf.at
  */
 public class App
 {
   static {
     //System.loadLibrary("libnativeappsim");
     System.loadLibrary("AtmegaSimSharedLib");
+    File f = new File(System.getProperty("user.dir") + "/../AtmegaSimSharedLib/");
+    String path = null;
+    try { path = f.getCanonicalPath() + "/"; } catch (Exception ex) {}
+    NATIVE_PATH = path;
   }
   
-  private final OutputStream out, log;  
+  private static final Logger LOG = Logger.getLogger(App.class.getName());
+  private static final String NATIVE_PATH;
+  
+  // ****************************************************************************************
+  
+  private OutputStream out;
+  private final OutputStream log;  
   
   public native String nativeVersion();
   public native void init ();
@@ -33,18 +45,24 @@ public class App
   public native void timer1_ovf ();
   public native void timer2_ovf ();
   public native void uart_isr (byte b);
+  public native void sys_500us_isr ();
 
 
   public App ()
   {
-    out = new OutputStream()
+    this (new OutputStream()
     {
       @Override
       public void write (int b) throws IOException
       {
         System.out.println(String.format(" ---> From Out: %02x", b));
       }
-    };
+    });
+  }
+  
+  public App (OutputStream out)
+  {
+    this.out = out;
 
     log = new OutputStream()
     {
@@ -57,8 +75,21 @@ public class App
           baos = new ByteArrayOutputStream(256);
         if (b == 0) 
         {
-          System.out.println(new String(baos.toByteArray()));
+          String msg = new String(baos.toByteArray());
+          String location = null;
           baos.reset();
+          if (!msg.startsWith("/"))
+          {
+            int i = msg.indexOf(')');
+            if (i > 0)
+            {
+              location = NATIVE_PATH + msg.substring(0, i+1);
+              msg = "NATIVE -> " + msg.substring(i+2);
+            }
+          }
+          LOG.info(msg);
+          if (location != null)
+            System.out.println(location);
         }
         else
         {
@@ -69,6 +100,11 @@ public class App
     
   }
   
+  
+  public void setOut (OutputStream out)
+  {
+    this.out = out;
+  }
   
   
   public String version ()

@@ -6,6 +6,7 @@
 #endif
 
 #define sys_log(...) // sys_log(...)
+#define sys_printf printf
 
 // declarations
 
@@ -95,8 +96,8 @@ void     sys_main                 (void);
 void     sys_sei                  (void);
 void     sys_cli                  (void);
 
-uint8_t  sys_inc8BitCnt           (uint8_t count);
-uint16_t sys_inc16BitCnt          (uint16_t count);
+void     sys_inc8BitCnt           (volatile uint8_t *count);
+void     sys_inc16BitCnt          (volatile uint16_t *count);
 
 void     sys_newline              (void);
 

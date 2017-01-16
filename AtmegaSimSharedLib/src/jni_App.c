@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "app.h" // is a link to the Atmega Project 
+#include "sys_sim.h" 
 
 
 JNIEXPORT jstring JNICALL Java_jni_App_nativeVersion (JNIEnv *env, jobject obj)
@@ -88,7 +89,7 @@ cookie_io_functions_t my_fns = {
   (void*) my_closefn   // close
 };
 
-void sys_log (const char *fname, int line, int pid, const char *format, ...)
+void sys_log (char *fname, int line, int pid, const char *format, ...)
 {
   if (jni_app_globals.log.obj == NULL)
     return;
@@ -211,3 +212,11 @@ JNIEXPORT void JNICALL Java_jni_App_uart_1isr (JNIEnv *env, jobject obj, jbyte b
   sys_log(__FILE__, __LINE__, getpid(), "app_uart_isr(0x%02x)", (unsigned char)byte);
   app_uart_isr((uint8_t) byte);
 }
+
+JNIEXPORT void JNICALL Java_jni_App_sys_1500us_1isr  (JNIEnv *env, jobject obj)
+{
+  jni_App_setGlobals(env, obj);
+  sys_log(__FILE__, __LINE__, getpid(), "sys_500us_isr()");
+  sys_500us_isr();
+}
+

@@ -3,17 +3,40 @@ package gui;
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.TimeUnit;
+import logging.Logger;
 import javax.swing.JOptionPane;
 import jni.App;
 
 
 /**
  *
- * @author Manfred Steiner<sx@htl-kaindorf.at>
+ * @author sx@htl-kaindorf.at
  */
 public class AppGui extends javax.swing.JFrame
 {
+  static final Logger LOGP, LOG;
 
+  static 
+  {
+    //System.setProperty("logging.Logger.printStackTrace", "");
+    //System.setProperty("logging.LogOutputStreamHandler.showRecordHashcode", "false");
+    //System.setProperty("logging.Logger.printAll", "");
+    //System.setProperty("logging.LogRecordDataFormattedText.Terminal","NETBEANS");
+    //System.setProperty("logging.LogRecordDataFormattedText.Terminal","LINUX");
+    System.setProperty("logging.Logger.Level", "ALL");
+    //System.setProperty("logging.LogOutputStreamHandler.timeFormat", "%1$ta/%1$tF/%1$tT.%1$tL #%2$-3d");
+    //System.setProperty("logging.LogOutputStreamHandler.colorize", "false");
+
+    //System.setProperty("gui.ProtocolTesterGui.Logger.Level", "FINER");
+    //System.setProperty("measure.PortSim.Logger.Level", "ALL");
+    //System.setProperty("measure.PortCom.Logger.Level", "ALL");
+    LOGP = Logger.getParentLogger();
+    LOG = Logger.getLogger(AppGui.class.getName());
+  }     
+
+  
+  
   private final App app;
   /**
    * Creates new form AppGui
@@ -41,8 +64,11 @@ public class AppGui extends javax.swing.JFrame
     jpanWest = new javax.swing.JPanel();
     jPanel1 = new javax.swing.JPanel();
     jbutAppInit = new javax.swing.JButton();
-    jbutAppMain = new javax.swing.JButton();
     jPanel2 = new javax.swing.JPanel();
+    jcbMainAutomatic = new javax.swing.JCheckBox();
+    jbutAppMain = new javax.swing.JButton();
+    jPanel3 = new javax.swing.JPanel();
+    jcbTaskAutomatic = new javax.swing.JCheckBox();
     jbutAppTask1ms = new javax.swing.JButton();
     jbutAppTask2ms = new javax.swing.JButton();
     jbutAppTask4ms = new javax.swing.JButton();
@@ -51,10 +77,11 @@ public class AppGui extends javax.swing.JFrame
     jbutAppTask32ms = new javax.swing.JButton();
     jbutAppTask64ms = new javax.swing.JButton();
     jbutAppTask128ms = new javax.swing.JButton();
-    jPanel3 = new javax.swing.JPanel();
-    jbutAppTimer0Ovf = new javax.swing.JButton();
-    jbutAppTimer1Ovf = new javax.swing.JButton();
-    jbutAppTimer2Ovf = new javax.swing.JButton();
+    jbutSys500us = new javax.swing.JButton();
+    jPanel4 = new javax.swing.JPanel();
+    jbutAppTimer0Ovf1 = new javax.swing.JButton();
+    jbutAppTimer1Ovf1 = new javax.swing.JButton();
+    jbutAppTimer2Ovf1 = new javax.swing.JButton();
     jpanNorth = new javax.swing.JPanel();
     jtfUartIsrByte = new javax.swing.JTextField();
     jbutAppUart = new javax.swing.JButton();
@@ -64,7 +91,7 @@ public class AppGui extends javax.swing.JFrame
     jpanWest.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
     jpanWest.setLayout(new java.awt.GridBagLayout());
 
-    jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
     jPanel1.setLayout(new java.awt.GridBagLayout());
 
     jbutAppInit.setText("app_init");
@@ -77,10 +104,34 @@ public class AppGui extends javax.swing.JFrame
       }
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 0;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.weightx = 1.0;
-    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+    gridBagConstraints.insets = new java.awt.Insets(9, 5, 9, 5);
     jPanel1.add(jbutAppInit, gridBagConstraints);
+
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+    jpanWest.add(jPanel1, gridBagConstraints);
+
+    jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+    jPanel2.setLayout(new java.awt.GridBagLayout());
+
+    jcbMainAutomatic.setText("automatic call");
+    jcbMainAutomatic.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jcbMainAutomaticActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+    gridBagConstraints.insets = new java.awt.Insets(10, 7, 6, 7);
+    jPanel2.add(jcbMainAutomatic, gridBagConstraints);
 
     jbutAppMain.setText("app_main");
     jbutAppMain.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -95,16 +146,33 @@ public class AppGui extends javax.swing.JFrame
     gridBagConstraints.gridx = 0;
     gridBagConstraints.gridy = 1;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel1.add(jbutAppMain, gridBagConstraints);
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 5);
+    jPanel2.add(jbutAppMain, gridBagConstraints);
 
     gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 1;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.weightx = 1.0;
-    jpanWest.add(jPanel1, gridBagConstraints);
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+    jpanWest.add(jPanel2, gridBagConstraints);
 
-    jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    jPanel2.setLayout(new java.awt.GridBagLayout());
+    jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+    jPanel3.setLayout(new java.awt.GridBagLayout());
+
+    jcbTaskAutomatic.setText("automatic call");
+    jcbTaskAutomatic.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jcbTaskAutomaticActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+    gridBagConstraints.insets = new java.awt.Insets(9, 6, 9, 6);
+    jPanel3.add(jcbTaskAutomatic, gridBagConstraints);
 
     jbutAppTask1ms.setText("app_task_1ms");
     jbutAppTask1ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -117,10 +185,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 2;
+    gridBagConstraints.gridy = 1;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask1ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask1ms, gridBagConstraints);
 
     jbutAppTask2ms.setText("app_task_2ms");
     jbutAppTask2ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -133,10 +201,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 3;
+    gridBagConstraints.gridy = 2;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask2ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask2ms, gridBagConstraints);
 
     jbutAppTask4ms.setText("app_task_4ms");
     jbutAppTask4ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -149,10 +217,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 4;
+    gridBagConstraints.gridy = 3;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask4ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask4ms, gridBagConstraints);
 
     jbutAppTask8ms.setText("app_task_8ms");
     jbutAppTask8ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -165,10 +233,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 5;
+    gridBagConstraints.gridy = 4;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask8ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask8ms, gridBagConstraints);
 
     jbutAppTask16ms.setText("app_task_16ms");
     jbutAppTask16ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -181,10 +249,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 6;
+    gridBagConstraints.gridy = 5;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask16ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask16ms, gridBagConstraints);
 
     jbutAppTask32ms.setText("app_task_32ms");
     jbutAppTask32ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -197,10 +265,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 7;
+    gridBagConstraints.gridy = 6;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask32ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask32ms, gridBagConstraints);
 
     jbutAppTask64ms.setText("app_task_64ms");
     jbutAppTask64ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -213,10 +281,10 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 8;
+    gridBagConstraints.gridy = 7;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask64ms, gridBagConstraints);
+    jPanel3.add(jbutAppTask64ms, gridBagConstraints);
 
     jbutAppTask128ms.setText("app_task_128ms");
     jbutAppTask128ms.setMargin(new java.awt.Insets(4, 4, 4, 4));
@@ -229,74 +297,93 @@ public class AppGui extends javax.swing.JFrame
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 8;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.insets = new java.awt.Insets(0, 5, 13, 5);
+    jPanel3.add(jbutAppTask128ms, gridBagConstraints);
+
+    jbutSys500us.setText("sys_500us_isr");
+    jbutSys500us.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutSys500us.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutSys500usActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
     gridBagConstraints.gridy = 9;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel2.add(jbutAppTask128ms, gridBagConstraints);
-
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 1;
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    jpanWest.add(jPanel2, gridBagConstraints);
-
-    jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    jPanel3.setLayout(new java.awt.GridBagLayout());
-
-    jbutAppTimer0Ovf.setText("app_timer0_ovf");
-    jbutAppTimer0Ovf.setMargin(new java.awt.Insets(4, 4, 4, 4));
-    jbutAppTimer0Ovf.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(java.awt.event.ActionEvent evt)
-      {
-        jbutAppTimer0OvfActionPerformed(evt);
-      }
-    });
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 10;
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.weightx = 1.0;
-    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel3.add(jbutAppTimer0Ovf, gridBagConstraints);
-
-    jbutAppTimer1Ovf.setText("app_timer1_ovf");
-    jbutAppTimer1Ovf.setMargin(new java.awt.Insets(4, 4, 4, 4));
-    jbutAppTimer1Ovf.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(java.awt.event.ActionEvent evt)
-      {
-        jbutAppTimer1OvfActionPerformed(evt);
-      }
-    });
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 11;
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel3.add(jbutAppTimer1Ovf, gridBagConstraints);
-
-    jbutAppTimer2Ovf.setText("app_timer2_ovf");
-    jbutAppTimer2Ovf.setMargin(new java.awt.Insets(4, 4, 4, 4));
-    jbutAppTimer2Ovf.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(java.awt.event.ActionEvent evt)
-      {
-        jbutAppTimer2OvfActionPerformed(evt);
-      }
-    });
-    gridBagConstraints = new java.awt.GridBagConstraints();
-    gridBagConstraints.gridx = 0;
-    gridBagConstraints.gridy = 12;
-    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-    jPanel3.add(jbutAppTimer2Ovf, gridBagConstraints);
+    gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 5);
+    jPanel3.add(jbutSys500us, gridBagConstraints);
 
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.gridx = 0;
     gridBagConstraints.gridy = 2;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
     jpanWest.add(jPanel3, gridBagConstraints);
+
+    jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+    jPanel4.setLayout(new java.awt.GridBagLayout());
+
+    jbutAppTimer0Ovf1.setText("app_timer0_ovf");
+    jbutAppTimer0Ovf1.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutAppTimer0Ovf1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutAppTimer0Ovf1ActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 0;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.insets = new java.awt.Insets(10, 5, 0, 5);
+    jPanel4.add(jbutAppTimer0Ovf1, gridBagConstraints);
+
+    jbutAppTimer1Ovf1.setText("app_timer1_ovf");
+    jbutAppTimer1Ovf1.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutAppTimer1Ovf1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutAppTimer1Ovf1ActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 1;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+    jPanel4.add(jbutAppTimer1Ovf1, gridBagConstraints);
+
+    jbutAppTimer2Ovf1.setText("app_timer2_ovf");
+    jbutAppTimer2Ovf1.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutAppTimer2Ovf1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutAppTimer2Ovf1ActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 2;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 5);
+    jPanel4.add(jbutAppTimer2Ovf1, gridBagConstraints);
+
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 3;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+    jpanWest.add(jPanel4, gridBagConstraints);
 
     getContentPane().add(jpanWest, java.awt.BorderLayout.WEST);
 
@@ -332,11 +419,6 @@ public class AppGui extends javax.swing.JFrame
   {//GEN-HEADEREND:event_jbutAppInitActionPerformed
     app.init();
   }//GEN-LAST:event_jbutAppInitActionPerformed
-
-  private void jbutAppMainActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppMainActionPerformed
-  {//GEN-HEADEREND:event_jbutAppMainActionPerformed
-    app.main();
-  }//GEN-LAST:event_jbutAppMainActionPerformed
 
   private void jbutAppUartActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppUartActionPerformed
   {//GEN-HEADEREND:event_jbutAppUartActionPerformed
@@ -422,20 +504,40 @@ public class AppGui extends javax.swing.JFrame
     app.task_128ms();
   }//GEN-LAST:event_jbutAppTask128msActionPerformed
 
-  private void jbutAppTimer0OvfActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTimer0OvfActionPerformed
-  {//GEN-HEADEREND:event_jbutAppTimer0OvfActionPerformed
+  private void jbutSys500usActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutSys500usActionPerformed
+  {//GEN-HEADEREND:event_jbutSys500usActionPerformed
+    app.sys_500us_isr();
+  }//GEN-LAST:event_jbutSys500usActionPerformed
+
+  private void jbutAppTimer0Ovf1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTimer0Ovf1ActionPerformed
+  {//GEN-HEADEREND:event_jbutAppTimer0Ovf1ActionPerformed
     app.timer0_ovf();
-  }//GEN-LAST:event_jbutAppTimer0OvfActionPerformed
+  }//GEN-LAST:event_jbutAppTimer0Ovf1ActionPerformed
 
-  private void jbutAppTimer1OvfActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTimer1OvfActionPerformed
-  {//GEN-HEADEREND:event_jbutAppTimer1OvfActionPerformed
+  private void jbutAppTimer1Ovf1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTimer1Ovf1ActionPerformed
+  {//GEN-HEADEREND:event_jbutAppTimer1Ovf1ActionPerformed
     app.timer1_ovf();
-  }//GEN-LAST:event_jbutAppTimer1OvfActionPerformed
+  }//GEN-LAST:event_jbutAppTimer1Ovf1ActionPerformed
 
-  private void jbutAppTimer2OvfActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTimer2OvfActionPerformed
-  {//GEN-HEADEREND:event_jbutAppTimer2OvfActionPerformed
+  private void jbutAppTimer2Ovf1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTimer2Ovf1ActionPerformed
+  {//GEN-HEADEREND:event_jbutAppTimer2Ovf1ActionPerformed
     app.timer2_ovf();
-  }//GEN-LAST:event_jbutAppTimer2OvfActionPerformed
+  }//GEN-LAST:event_jbutAppTimer2Ovf1ActionPerformed
+
+  private void jcbTaskAutomaticActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jcbTaskAutomaticActionPerformed
+  {//GEN-HEADEREND:event_jcbTaskAutomaticActionPerformed
+    enableTaskAutomatic(jcbTaskAutomatic.isSelected());
+  }//GEN-LAST:event_jcbTaskAutomaticActionPerformed
+
+  private void jbutAppMainActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppMainActionPerformed
+  {//GEN-HEADEREND:event_jbutAppMainActionPerformed
+    app.main();
+  }//GEN-LAST:event_jbutAppMainActionPerformed
+
+  private void jcbMainAutomaticActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jcbMainAutomaticActionPerformed
+  {//GEN-HEADEREND:event_jcbMainAutomaticActionPerformed
+    enableMainAutomatic(jcbMainAutomatic.isSelected());
+  }//GEN-LAST:event_jcbMainAutomaticActionPerformed
   
 
   /**
@@ -481,6 +583,9 @@ public class AppGui extends javax.swing.JFrame
     //</editor-fold>
     //</editor-fold>
 
+    LOGP.addHandler(new logging.LogOutputStreamHandler(System.out));
+    LOG.setLevel(java.util.logging.Level.ALL);
+    
     /*
      * Create and display the form
      */
@@ -494,6 +599,7 @@ public class AppGui extends javax.swing.JFrame
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
+  private javax.swing.JPanel jPanel4;
   private javax.swing.JButton jbutAppInit;
   private javax.swing.JButton jbutAppMain;
   private javax.swing.JButton jbutAppTask128ms;
@@ -504,13 +610,168 @@ public class AppGui extends javax.swing.JFrame
   private javax.swing.JButton jbutAppTask4ms;
   private javax.swing.JButton jbutAppTask64ms;
   private javax.swing.JButton jbutAppTask8ms;
-  private javax.swing.JButton jbutAppTimer0Ovf;
-  private javax.swing.JButton jbutAppTimer1Ovf;
-  private javax.swing.JButton jbutAppTimer2Ovf;
+  private javax.swing.JButton jbutAppTimer0Ovf1;
+  private javax.swing.JButton jbutAppTimer1Ovf1;
+  private javax.swing.JButton jbutAppTimer2Ovf1;
   private javax.swing.JButton jbutAppUart;
+  private javax.swing.JButton jbutSys500us;
+  private javax.swing.JCheckBox jcbMainAutomatic;
+  private javax.swing.JCheckBox jcbTaskAutomatic;
   private javax.swing.JPanel jpanNorth;
   private javax.swing.JPanel jpanWest;
   private javax.swing.JTextField jtfUartIsrByte;
   // End of variables declaration//GEN-END:variables
+
+
+  private void enableTaskAutomatic (boolean enabled)
+  {
+    if (enabled)
+    {
+      jbutAppTask1ms.setEnabled(false);
+      jbutAppTask2ms.setEnabled(false);
+      jbutAppTask4ms.setEnabled(false);
+      jbutAppTask8ms.setEnabled(false);
+      jbutAppTask16ms.setEnabled(false);
+      jbutAppTask32ms.setEnabled(false);
+      jbutAppTask64ms.setEnabled(false);
+      jbutAppTask128ms.setEnabled(false);
+      if (automaticCallThread == null)
+      {
+        automaticCallThread = new AutomaticCallThread();
+        automaticCallThread.start();
+      }
+      automaticCallThread.setCallTasks(true);
+    }
+    else
+    {
+      jbutAppTask1ms.setEnabled(true);
+      jbutAppTask2ms.setEnabled(true);
+      jbutAppTask4ms.setEnabled(true);
+      jbutAppTask8ms.setEnabled(true);
+      jbutAppTask16ms.setEnabled(true);
+      jbutAppTask32ms.setEnabled(true);
+      jbutAppTask64ms.setEnabled(true);
+      jbutAppTask128ms.setEnabled(true);
+      if (automaticCallThread != null)
+      {
+        if (!jcbMainAutomatic.isSelected())
+        {
+          automaticCallThread.interrupt();
+          automaticCallThread = null;
+        }
+        else
+          automaticCallThread.setCallTasks(false);
+      }
+    }
+  }
+  
+  private void enableMainAutomatic (boolean enabled)
+  {
+    if (enabled)
+    {
+      jbutAppMain.setEnabled(false);
+      if (automaticCallThread == null)
+      {
+        automaticCallThread = new AutomaticCallThread();
+        automaticCallThread.start();
+      }
+      automaticCallThread.setCallMain(true);
+    }
+    else
+    {
+      jbutAppMain.setEnabled(true);
+      if (automaticCallThread != null)
+      {
+        if (!jcbTaskAutomatic.isSelected())
+        {
+          automaticCallThread.interrupt();
+          automaticCallThread = null;
+        }
+        else
+          automaticCallThread.setCallMain(false);
+      }
+    }
+
+  }
+  
+  
+  private AutomaticCallThread automaticCallThread;
+
+
+  private class AutomaticCallThread extends Thread
+  {
+    private boolean callTasks;
+    private boolean callMain;
+
+
+    public boolean isCallTasks ()
+    {
+      return callTasks;
+    }
+
+
+    public void setCallTasks (boolean callTasks)
+    {
+      this.callTasks = callTasks;
+    }
+
+
+    public boolean isCallMain ()
+    {
+      return callMain;
+    }
+
+
+    public void setCallMain (boolean callMain)
+    {
+      this.callMain = callMain;
+    }
+    
+    
+    @Override
+    public void run ()
+    {
+      try
+      {
+        LOG.finest("AutomaticCallThread started");
+        while (!Thread.currentThread().isInterrupted())
+        {
+          try
+          {
+            if (callMain && callTasks)
+            {
+              TimeUnit.NANOSECONDS.sleep(250);
+              app.sys_500us_isr();
+              TimeUnit.NANOSECONDS.sleep(250);
+              app.main();
+            }
+            else if (callTasks)
+            {
+              TimeUnit.NANOSECONDS.sleep(500);
+              app.sys_500us_isr();
+            }
+            else if (callMain)
+            {
+              TimeUnit.NANOSECONDS.sleep(500);
+              app.main();
+            }
+            else
+            {
+              TimeUnit.NANOSECONDS.sleep(500);
+            }
+          }
+          catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
+          catch (Exception ex)
+          {
+            LOG.warning(ex);
+          }
+        }
+      }
+      finally
+      {
+        LOG.finest("AutomaticCallThread stopped");
+      }
+    }
+  }
 
 }
