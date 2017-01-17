@@ -26,7 +26,7 @@ void       sys_inc16BitCnt          (volatile uint16_t *count);
 void       sys_500us_isr            ();
 
 extern void sys_printf (const char *format, ...);
-extern void sys_log (char *fileName, int line, __pid_t pid, const char *format, ...);
+extern void sys_log (const char *fileName, int line, __pid_t pid, const char *format, ...);
 extern __pid_t sys_pid ();
 
 

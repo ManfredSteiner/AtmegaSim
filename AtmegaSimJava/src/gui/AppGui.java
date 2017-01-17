@@ -3,10 +3,17 @@ package gui;
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.lang.management.ManagementFactory;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.swing.DefaultComboBoxModel;
 import logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import jni.App;
+import serial.Port;
+import serial.PortSerial;
+import serial.PortSim;
 
 
 /**
@@ -24,13 +31,13 @@ public class AppGui extends javax.swing.JFrame
     //System.setProperty("logging.Logger.printAll", "");
     //System.setProperty("logging.LogRecordDataFormattedText.Terminal","NETBEANS");
     //System.setProperty("logging.LogRecordDataFormattedText.Terminal","LINUX");
-    System.setProperty("logging.Logger.Level", "ALL");
+    System.setProperty("logging.Logger.Level", "INFO");
     //System.setProperty("logging.LogOutputStreamHandler.timeFormat", "%1$ta/%1$tF/%1$tT.%1$tL #%2$-3d");
     //System.setProperty("logging.LogOutputStreamHandler.colorize", "false");
 
-    //System.setProperty("gui.ProtocolTesterGui.Logger.Level", "FINER");
-    //System.setProperty("measure.PortSim.Logger.Level", "ALL");
-    //System.setProperty("measure.PortCom.Logger.Level", "ALL");
+    System.setProperty("gui.AppGui.Logger.Level", "INFO");
+    System.setProperty("serial.PortSim.Logger.Level", "INFO");
+    System.setProperty("serial.PortSerial.Logger.Level", "INFO");
     LOGP = Logger.getParentLogger();
     LOG = Logger.getLogger(AppGui.class.getName());
   }     
@@ -38,6 +45,10 @@ public class AppGui extends javax.swing.JFrame
   
   
   private final App app;
+  private Port port;
+  private AutomaticCallThread automaticCallThread;
+  private ReceiveWorker receiveWorker;
+  
   /**
    * Creates new form AppGui
    */
@@ -47,9 +58,84 @@ public class AppGui extends javax.swing.JFrame
     initComponents();
     app = new App();
     setTitle("AppSim: " + ManagementFactory.getRuntimeMXBean().getName());
-    setMinimumSize(new Dimension(400,50));
+    setMinimumSize(new Dimension(600,50));
+    updateSwingControls();
+    jcbPorts.setModel(new DefaultComboBoxModel());
+    updatePorts();
   } 
 
+    private void updateSwingControls ()
+  {
+    if (port != null && port.isOpened())
+    {
+      jchkSimulatePort.setEnabled(false);
+      jcbPorts.setEnabled(false);
+      jbutUpdate.setEnabled(false);
+      jbutOpen.setEnabled(false);
+      jbutClose.setEnabled(true);
+      jbutUartSend.setEnabled(true);
+    }
+    else
+    {
+      jchkSimulatePort.setEnabled(true);
+      jcbPorts.setEnabled(true);
+      jbutUpdate.setEnabled(true);
+      jbutOpen.setEnabled(true);
+      jbutClose.setEnabled(false);
+      jbutUartSend.setEnabled(false);
+    }
+  }
+  
+  private void updatePorts()
+  {
+    port = jchkSimulatePort.isSelected() ? new PortSim(app) : new PortSerial();    
+    String [] ports = port.getPortNames();
+    DefaultComboBoxModel m = (DefaultComboBoxModel) jcbPorts.getModel();
+    Object selected = m.getSelectedItem();
+    m.removeAllElements();
+    for (String p : ports)
+      m.addElement(p);
+    for (int i=0; i<m.getSize(); i++)
+    {
+      String item = (String)m.getElementAt(i);
+      if (item.equals(selected))
+      {
+        m.setSelectedItem(item);
+        selected = null;
+        break;
+      }
+    }
+    if (selected != null)
+    {
+      for (int i=0; i<m.getSize(); i++)
+      {
+        String item = (String)m.getElementAt(i);
+        if ( item.contains("USB0") )
+        {
+          m.setSelectedItem(item);
+          break;
+        }
+      }
+    }
+  }
+  
+  private void showThrowable (Throwable th)
+  {
+    showThrowable(null, th);
+  }
+  
+  private void showThrowable (String msg, Throwable th)
+  {
+    LOG.warning(th);
+    if (msg == null && th != null)
+      msg = th.getMessage();
+    if (msg == null && th != null)
+      msg = th.getClass().getSimpleName();
+    if (msg == null)
+      msg = "Unbekannter Fehler, siehe Callstack...";
+    JOptionPane.showMessageDialog(this, msg, "Error...", JOptionPane.ERROR_MESSAGE);
+  }
+  
 
   /**
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
@@ -61,7 +147,10 @@ public class AppGui extends javax.swing.JFrame
   {
     java.awt.GridBagConstraints gridBagConstraints;
 
+    jpanNorth = new javax.swing.JPanel();
     jpanWest = new javax.swing.JPanel();
+    jScrollPane1 = new javax.swing.JScrollPane();
+    jpanWestContent = new javax.swing.JPanel();
     jPanel1 = new javax.swing.JPanel();
     jbutAppInit = new javax.swing.JButton();
     jPanel2 = new javax.swing.JPanel();
@@ -82,14 +171,40 @@ public class AppGui extends javax.swing.JFrame
     jbutAppTimer0Ovf1 = new javax.swing.JButton();
     jbutAppTimer1Ovf1 = new javax.swing.JButton();
     jbutAppTimer2Ovf1 = new javax.swing.JButton();
-    jpanNorth = new javax.swing.JPanel();
-    jtfUartIsrByte = new javax.swing.JTextField();
-    jbutAppUart = new javax.swing.JButton();
+    jpanCenter = new javax.swing.JPanel();
+    jpanCenterContent = new javax.swing.JPanel();
+    jpanNorthContent = new javax.swing.JPanel();
+    jchkSimulatePort = new javax.swing.JCheckBox();
+    jpanCommButtons = new javax.swing.JPanel();
+    jbutOpen = new javax.swing.JButton();
+    jbutClose = new javax.swing.JButton();
+    jbutUpdate = new javax.swing.JButton();
+    jcbPorts = new javax.swing.JComboBox<>();
+    jLabel1 = new javax.swing.JLabel();
+    jpanUartSend = new javax.swing.JPanel();
+    jtfSendData = new javax.swing.JTextField();
+    jbutUartSend = new javax.swing.JButton();
+    jScrollPane2 = new javax.swing.JScrollPane();
+    jtaOutput = new javax.swing.JTextArea();
+    jpanCenterSouth = new javax.swing.JPanel();
+    jpanUsrtIsr = new javax.swing.JPanel();
+    jtfSendUartIsr = new javax.swing.JTextField();
+    jbutAppUartIsr = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-    jpanWest.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    jpanWest.setLayout(new java.awt.GridBagLayout());
+    jpanNorth.setBorder(javax.swing.BorderFactory.createEmptyBorder(9, 9, 9, 9));
+    jpanNorth.setLayout(new java.awt.GridBagLayout());
+    getContentPane().add(jpanNorth, java.awt.BorderLayout.PAGE_START);
+
+    jpanWest.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+    jpanWest.setLayout(new java.awt.GridLayout(1, 0));
+
+    jScrollPane1.setBorder(null);
+    jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+    jpanWestContent.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 16));
+    jpanWestContent.setLayout(new java.awt.GridBagLayout());
 
     jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
     jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -115,7 +230,7 @@ public class AppGui extends javax.swing.JFrame
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.weightx = 1.0;
     gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-    jpanWest.add(jPanel1, gridBagConstraints);
+    jpanWestContent.add(jPanel1, gridBagConstraints);
 
     jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
     jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -156,7 +271,7 @@ public class AppGui extends javax.swing.JFrame
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.weightx = 1.0;
     gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-    jpanWest.add(jPanel2, gridBagConstraints);
+    jpanWestContent.add(jPanel2, gridBagConstraints);
 
     jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
     jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -324,7 +439,7 @@ public class AppGui extends javax.swing.JFrame
     gridBagConstraints.gridy = 2;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-    jpanWest.add(jPanel3, gridBagConstraints);
+    jpanWestContent.add(jPanel3, gridBagConstraints);
 
     jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
     jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -383,34 +498,168 @@ public class AppGui extends javax.swing.JFrame
     gridBagConstraints.gridy = 3;
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-    jpanWest.add(jPanel4, gridBagConstraints);
+    jpanWestContent.add(jPanel4, gridBagConstraints);
+
+    jScrollPane1.setViewportView(jpanWestContent);
+
+    jpanWest.add(jScrollPane1);
 
     getContentPane().add(jpanWest, java.awt.BorderLayout.WEST);
 
-    jpanNorth.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    jpanNorth.setLayout(new java.awt.GridBagLayout());
+    jpanCenter.setLayout(new java.awt.BorderLayout());
 
-    jtfUartIsrByte.setMinimumSize(new java.awt.Dimension(50, 27));
+    jpanCenterContent.setBorder(javax.swing.BorderFactory.createTitledBorder("Serial Interface"));
+    jpanCenterContent.setLayout(new java.awt.BorderLayout());
+
+    jpanNorthContent.setLayout(new java.awt.GridBagLayout());
+
+    jchkSimulatePort.setSelected(true);
+    jchkSimulatePort.setText("Simulation");
+    jchkSimulatePort.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jchkSimulatePortActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridwidth = 3;
+    gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+    jpanNorthContent.add(jchkSimulatePort, gridBagConstraints);
+
+    jpanCommButtons.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
+
+    jbutOpen.setText("Open");
+    jbutOpen.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutOpen.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutOpenActionPerformed(evt);
+      }
+    });
+    jpanCommButtons.add(jbutOpen);
+
+    jbutClose.setText("Close");
+    jbutClose.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutClose.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutCloseActionPerformed(evt);
+      }
+    });
+    jpanCommButtons.add(jbutClose);
+
+    jbutUpdate.setText("Update");
+    jbutUpdate.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutUpdate.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutUpdateActionPerformed(evt);
+      }
+    });
+    jpanCommButtons.add(jbutUpdate);
+
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 2;
+    gridBagConstraints.gridy = 1;
+    gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+    jpanNorthContent.add(jpanCommButtons, gridBagConstraints);
+
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 1;
+    gridBagConstraints.gridy = 1;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+    jpanNorthContent.add(jcbPorts, gridBagConstraints);
+
+    jLabel1.setText("Port");
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 1;
+    gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+    jpanNorthContent.add(jLabel1, gridBagConstraints);
+
+    jpanUartSend.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    jpanUartSend.setLayout(new java.awt.GridBagLayout());
+
+    jtfSendData.setMinimumSize(new java.awt.Dimension(50, 27));
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
     gridBagConstraints.weightx = 1.0;
     gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
-    jpanNorth.add(jtfUartIsrByte, gridBagConstraints);
+    jpanUartSend.add(jtfSendData, gridBagConstraints);
 
-    jbutAppUart.setText("app_uart_isr");
-    jbutAppUart.setMargin(new java.awt.Insets(4, 4, 4, 4));
-    jbutAppUart.addActionListener(new java.awt.event.ActionListener()
+    jbutUartSend.setText("Send");
+    jbutUartSend.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutUartSend.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(java.awt.event.ActionEvent evt)
       {
-        jbutAppUartActionPerformed(evt);
+        jbutUartSendActionPerformed(evt);
       }
     });
     gridBagConstraints = new java.awt.GridBagConstraints();
     gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-    jpanNorth.add(jbutAppUart, gridBagConstraints);
+    jpanUartSend.add(jbutUartSend, gridBagConstraints);
 
-    getContentPane().add(jpanNorth, java.awt.BorderLayout.NORTH);
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 2;
+    gridBagConstraints.gridwidth = 3;
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.weightx = 1.0;
+    jpanNorthContent.add(jpanUartSend, gridBagConstraints);
+
+    jpanCenterContent.add(jpanNorthContent, java.awt.BorderLayout.NORTH);
+
+    jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Received..."));
+
+    jtaOutput.setEditable(false);
+    jtaOutput.setColumns(20);
+    jtaOutput.setFont(new java.awt.Font("Liberation Mono", 0, 12)); // NOI18N
+    jtaOutput.setRows(5);
+    jScrollPane2.setViewportView(jtaOutput);
+
+    jpanCenterContent.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+
+    jpanCenter.add(jpanCenterContent, java.awt.BorderLayout.CENTER);
+
+    getContentPane().add(jpanCenter, java.awt.BorderLayout.CENTER);
+
+    jpanCenterSouth.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    jpanCenterSouth.setLayout(new java.awt.GridLayout(1, 0));
+
+    jpanUsrtIsr.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+    jpanUsrtIsr.setLayout(new java.awt.GridBagLayout());
+
+    jtfSendUartIsr.setMinimumSize(new java.awt.Dimension(50, 27));
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
+    jpanUsrtIsr.add(jtfSendUartIsr, gridBagConstraints);
+
+    jbutAppUartIsr.setText("app_uart_isr");
+    jbutAppUartIsr.setMargin(new java.awt.Insets(4, 4, 4, 4));
+    jbutAppUartIsr.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(java.awt.event.ActionEvent evt)
+      {
+        jbutAppUartIsrActionPerformed(evt);
+      }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+    jpanUsrtIsr.add(jbutAppUartIsr, gridBagConstraints);
+
+    jpanCenterSouth.add(jpanUsrtIsr);
+
+    getContentPane().add(jpanCenterSouth, java.awt.BorderLayout.SOUTH);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -420,49 +669,18 @@ public class AppGui extends javax.swing.JFrame
     app.init();
   }//GEN-LAST:event_jbutAppInitActionPerformed
 
-  private void jbutAppUartActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppUartActionPerformed
-  {//GEN-HEADEREND:event_jbutAppUartActionPerformed
-    String s = jtfUartIsrByte.getText();
-    if (s == null)
-      app.uart_isr((byte)0);
-    else
+  private void jbutUartSendActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutUartSendActionPerformed
+  {//GEN-HEADEREND:event_jbutUartSendActionPerformed
+    try
     {
-      try
-      {
-        String [] sa = s.split(",");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(sa.length);
-        for (int i=0; i<sa.length; i++)
-        {
-          String v = sa[i].trim();
-          if (v.startsWith("0x"))
-            baos.write(Byte.parseByte(v.substring(2), 16));
-          else if (v.startsWith("0b"))
-            baos.write(Byte.parseByte(v.substring(2), 2));
-          else if (v.startsWith("0") && v.length()>1)
-            baos.write(Byte.parseByte(v.substring(1), 8));
-          else if (v.startsWith("'") && v.endsWith("'") && v.length() == 3)
-            baos.write((byte)(v.charAt(1)));
-          else if (v.startsWith("\"") && v.endsWith("\"") && v.length() > 2)
-          {
-            for (int j=1; j<v.length()-1; j++)
-            {
-              baos.write((byte)v.charAt(j));
-            }
-          }
-          else
-            baos.write(Byte.parseByte(v, 10));
-        }
-        byte [] ba = baos.toByteArray();
-        for (int i=0; i<ba.length; i++)
-          app.uart_isr(ba[i]);
-      }
-      catch (Exception ex)
-      {
-        ex.printStackTrace(System.err);
-        JOptionPane.showMessageDialog(this, ex.getClass().getSimpleName(), "Error...", JOptionPane.ERROR_MESSAGE);
-      }
+      byte [] ba = parseSendString(jtfSendData.getText());
+      port.writeBytes(ba);
     }
-  }//GEN-LAST:event_jbutAppUartActionPerformed
+    catch (Exception ex)
+    {
+      showThrowable(ex);
+    }
+  }//GEN-LAST:event_jbutUartSendActionPerformed
 
   private void jbutAppTask1msActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppTask1msActionPerformed
   {//GEN-HEADEREND:event_jbutAppTask1msActionPerformed
@@ -538,6 +756,40 @@ public class AppGui extends javax.swing.JFrame
   {//GEN-HEADEREND:event_jcbMainAutomaticActionPerformed
     enableMainAutomatic(jcbMainAutomatic.isSelected());
   }//GEN-LAST:event_jcbMainAutomaticActionPerformed
+
+  private void jbutOpenActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutOpenActionPerformed
+  {//GEN-HEADEREND:event_jbutOpenActionPerformed
+    open();
+  }//GEN-LAST:event_jbutOpenActionPerformed
+
+  private void jbutCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutCloseActionPerformed
+  {//GEN-HEADEREND:event_jbutCloseActionPerformed
+    close();
+  }//GEN-LAST:event_jbutCloseActionPerformed
+
+  private void jbutUpdateActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutUpdateActionPerformed
+  {//GEN-HEADEREND:event_jbutUpdateActionPerformed
+    updatePorts();
+  }//GEN-LAST:event_jbutUpdateActionPerformed
+
+  private void jchkSimulatePortActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jchkSimulatePortActionPerformed
+  {//GEN-HEADEREND:event_jchkSimulatePortActionPerformed
+    updatePorts();
+  }//GEN-LAST:event_jchkSimulatePortActionPerformed
+
+  private void jbutAppUartIsrActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jbutAppUartIsrActionPerformed
+  {//GEN-HEADEREND:event_jbutAppUartIsrActionPerformed
+    try
+    {
+      byte [] ba = parseSendString(jtfSendUartIsr.getText());
+      for (int i=0; i<ba.length; i++)
+        app.uart_isr(ba[i]);
+    }
+    catch (Exception ex)
+    {
+      showThrowable(ex);
+    }
+  }//GEN-LAST:event_jbutAppUartIsrActionPerformed
   
 
   /**
@@ -596,10 +848,13 @@ public class AppGui extends javax.swing.JFrame
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JLabel jLabel1;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
   private javax.swing.JPanel jPanel4;
+  private javax.swing.JScrollPane jScrollPane1;
+  private javax.swing.JScrollPane jScrollPane2;
   private javax.swing.JButton jbutAppInit;
   private javax.swing.JButton jbutAppMain;
   private javax.swing.JButton jbutAppTask128ms;
@@ -613,13 +868,29 @@ public class AppGui extends javax.swing.JFrame
   private javax.swing.JButton jbutAppTimer0Ovf1;
   private javax.swing.JButton jbutAppTimer1Ovf1;
   private javax.swing.JButton jbutAppTimer2Ovf1;
-  private javax.swing.JButton jbutAppUart;
+  private javax.swing.JButton jbutAppUartIsr;
+  private javax.swing.JButton jbutClose;
+  private javax.swing.JButton jbutOpen;
   private javax.swing.JButton jbutSys500us;
+  private javax.swing.JButton jbutUartSend;
+  private javax.swing.JButton jbutUpdate;
   private javax.swing.JCheckBox jcbMainAutomatic;
+  private javax.swing.JComboBox<String> jcbPorts;
   private javax.swing.JCheckBox jcbTaskAutomatic;
+  private javax.swing.JCheckBox jchkSimulatePort;
+  private javax.swing.JPanel jpanCenter;
+  private javax.swing.JPanel jpanCenterContent;
+  private javax.swing.JPanel jpanCenterSouth;
+  private javax.swing.JPanel jpanCommButtons;
   private javax.swing.JPanel jpanNorth;
+  private javax.swing.JPanel jpanNorthContent;
+  private javax.swing.JPanel jpanUartSend;
+  private javax.swing.JPanel jpanUsrtIsr;
   private javax.swing.JPanel jpanWest;
-  private javax.swing.JTextField jtfUartIsrByte;
+  private javax.swing.JPanel jpanWestContent;
+  private javax.swing.JTextArea jtaOutput;
+  private javax.swing.JTextField jtfSendData;
+  private javax.swing.JTextField jtfSendUartIsr;
   // End of variables declaration//GEN-END:variables
 
 
@@ -695,7 +966,101 @@ public class AppGui extends javax.swing.JFrame
   }
   
   
-  private AutomaticCallThread automaticCallThread;
+  private void open ()
+  {
+    String portName = (String)jcbPorts.getSelectedItem();
+    if (portName == null || port == null)
+    {
+      LOG.warning("portName == " + portName + ", port == " + port);
+      return;
+    }
+    try
+    {
+      jtaOutput.setText(null);
+      port.openPort(portName);
+      receiveWorker = new ReceiveWorker();
+      receiveWorker.execute();
+      updateSwingControls();
+    }
+    catch (Exception ex)
+    {
+      showThrowable("cannot open port " + portName, ex);
+    }
+  }
+  
+  private void close () 
+  {
+    try
+    {
+      port.closePort();
+      receiveWorker.cancel(true);
+    }
+    catch (Exception ex)
+    {
+      showThrowable("cannot close port", ex);
+    }
+    finally
+    {
+      port = jchkSimulatePort.isSelected() ? new PortSim(app) : new PortSerial();
+      updateSwingControls();
+    }
+  }
+
+
+  private byte[] parseSendString (String s)
+  {
+    if (s == null || s.isEmpty())
+      return new byte [0];
+
+    try
+    {
+      String [] sa = s.split(",");
+      ByteArrayOutputStream baos = new ByteArrayOutputStream(sa.length);
+      for (int i=0; i<sa.length; i++)
+      {
+        String v = sa[i].trim();
+        if (v.startsWith("\"") && v.endsWith("\"") && v.length() > 2)
+        {
+          for (int j=1; j<v.length()-1; j++)
+          {
+            baos.write((byte)v.charAt(j));
+          }
+        }
+        else if (v.startsWith("'") && v.endsWith("'") && v.length() == 3)
+          baos.write((byte)(v.charAt(1)));
+        else if (v.startsWith("0b"))
+          baos.write((byte)(Integer.parseInt(v.substring(2), 2)));
+        else if (v.startsWith("0x"))
+        {
+          int index = 2;
+          if ((v.length() % 2) != 0)
+          {
+            String hex = v.substring(index, index+1);
+            int x = Integer.parseInt(hex, 16);
+            baos.write((byte)(x >= 128 ? x - 256 : x));
+            index++;
+          }
+          while (index < v.length())
+          {
+            String hex = v.substring(index, index+2);
+            int x = Integer.parseInt(hex, 16);
+            baos.write((byte)(x >= 128 ? x - 256 : x));
+            index += 2;
+          }
+        }
+        else if (v.startsWith("0") && v.length()>1)
+          baos.write((byte)(Integer.parseInt(v.substring(2), 8)));
+        else
+          baos.write((byte)(Integer.parseInt(v, 10)));
+      }
+      return baos.toByteArray();
+    }
+    catch (Exception ex)
+    {
+      throw new IllegalArgumentException("format error, cannot convert string int byte []");
+    }
+  }
+
 
 
   private class AutomaticCallThread extends Thread
@@ -774,4 +1139,96 @@ public class AppGui extends javax.swing.JFrame
     }
   }
 
+  
+  private class ReceiveWorker extends SwingWorker<Object, String>
+  {
+    private String text;
+    private String lastLine;
+    
+    @Override
+    protected Object doInBackground () throws Exception
+    {
+      int cnt = 0;
+      int textIndex = 0;
+      char [] line = new char[81];
+      
+      try
+      {
+        LOG.finest("ReceiveWorker start");
+        
+        while (!isCancelled())
+        {
+          byte b = port.readByte();
+          
+          if ((cnt % 16) == 0)
+          {
+            if (cnt > 0)
+              publish("");
+            Arrays.fill(line, ' ');
+            //line[81] = 'Z';
+            char [] ca = String.format("%08x:", cnt).toCharArray();
+            System.arraycopy(ca, 0, line, 0, ca.length);
+            textIndex = 8;
+          }
+
+          if ((cnt % 4) == 0)
+            textIndex += 2;
+          else
+            textIndex++;
+          
+          char [] ca = String.format("%02x", b).toCharArray();
+          System.arraycopy(ca, 0, line, textIndex, ca.length);
+          textIndex += ca.length;
+          
+          char c = (b >= 30 && b<127) ? (char)b : '.';
+          line[65 + (cnt % 16)] = c;
+
+          String toPublish = new String(line);
+          publish(toPublish);
+          cnt++;
+        }
+        return null;
+      }
+      catch (Exception ex) 
+      {
+        if (port == null || !port.isOpened())
+          return null;
+        LOG.warning(ex);
+        throw ex;
+      }
+      finally
+      {
+        LOG.finest("ReceiveWorker end");
+      }      
+    }
+
+
+    @Override
+    protected void process (List<String> chunks)
+    {
+      for (String s : chunks)
+      {
+        if (s.isEmpty())
+        {
+          text = text != null ? text + lastLine + '\n' : lastLine + '\n';
+          lastLine = null;
+        }
+        else if (text == null)
+        {
+          jtaOutput.setText(s);
+          lastLine = s;
+        }
+        else 
+        {
+          jtaOutput.setText(text + s);
+          lastLine = s;
+        }
+      }
+    }
+    
+    
+    
+  }
+  
+  
 }

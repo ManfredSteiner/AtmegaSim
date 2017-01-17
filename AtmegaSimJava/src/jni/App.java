@@ -50,19 +50,12 @@ public class App
 
   public App ()
   {
-    this (new OutputStream()
-    {
-      @Override
-      public void write (int b) throws IOException
-      {
-        System.out.println(String.format(" ---> From Out: %02x", b));
-      }
-    });
+    this(null);
   }
   
   public App (OutputStream out)
   {
-    this.out = out;
+    setOut(out);
 
     log = new OutputStream()
     {
@@ -103,7 +96,10 @@ public class App
   
   public void setOut (OutputStream out)
   {
-    this.out = out;
+    if (out == null)
+      this.out = new DefaultOutputStream();
+    else
+      this.out = out;
   }
   
   
@@ -131,5 +127,17 @@ public class App
     app.timer2_ovf();
     app.uart_isr((byte)0xab);
   }
+
+  
+  private class DefaultOutputStream extends OutputStream
+  {
+    @Override
+    public void write (int b) throws IOException
+    {
+      LOG.info(" ---> From Simulation Out: 0x%02x", b);
+    }
+  }
+
+
   
 }
